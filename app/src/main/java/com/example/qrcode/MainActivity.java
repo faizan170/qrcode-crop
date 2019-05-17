@@ -75,41 +75,35 @@ public class MainActivity extends AppCompatActivity {
                             Rect bounds = barcode.getBoundingBox();
                             Point[] corners = barcode.getCornerPoints();
 
-                            Bitmap resultingImage=Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), bitmap.getConfig());
                             int xmin, ymin, xmax, ymax;
-                            xmin = corners[0].x;
-                            ymin = corners[1].y;
-                            xmax = corners[1].x;
-                            ymax = corners[2].y;
-                            //Bitmap cropedImg = Bitmap.createBitmap(bitmap, xmin, ymin, xmax - xmin, ymax - ymin);
-                            Canvas canvas = new Canvas(resultingImage);
+                            if(corners[3].x < corners[0].x)
+                                xmin = corners[3].x;
+                            else
+                                xmin = corners[0].x;
+                            if(corners[0].y < corners[1].y)
+                                ymin = corners[0].y;
+                            else
+                                ymin = corners[1].y;
+                            if(corners[1].x > corners[2].x)
+                                xmax = corners[1].x;
+                            else
+                                xmax = corners[2].x;
+                            if(corners[3].y > corners[2].y)
+                                ymax = corners[3].y;
+                            else
+                                ymax = corners[2].y;
 
-                            Paint paint = new Paint();
-                            paint.setAntiAlias(true);
-                            Path path=new Path();
-                            path.lineTo(corners[0].x, corners[0].y);
-                            path.lineTo(corners[1].x, corners[1].y);
-                            path.lineTo(corners[2].x, corners[2].y);
-                            path.lineTo(corners[3].x, corners[3].y);
-                            path.lineTo(corners[0].x, corners[0].y);
 
-                            canvas.drawPath(path, paint);
 
-                            paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
-                            canvas.drawBitmap(bitmap, 0, 0, paint);
-                            //Bitmap cropedImg = Bitmap.createBitmap(resultingImage, xmin, ymin, xmax - xmin, ymax - ymin);
-                            //imageView.setImageBitmap(resultingImage);
-                            //imageView.setImageBitmap(resultingImage);
 
+                            Bitmap resultingImage=Bitmap.createBitmap(bitmap,  xmin, ymin, xmax - xmin, ymax - ymin);
 
                             double angle = Math.toDegrees(Math.atan2(corners[3].x - corners[0].x, corners[3].y - corners[0].y));
                             // Keep angle between 0 and 360
                             angle = angle + Math.ceil( -angle / 360 ) * 360;
 
-                            Toast.makeText(MainActivity.this, Math.round(360.0 - angle) + " : " + angle, Toast.LENGTH_LONG).show();
                             Matrix matrix = new Matrix();
 
-                            String val = Math.round(360.0 - angle) + "";
                             double value = 0.0;
                             if(angle < 90){
                                 value =  angle;
@@ -117,34 +111,18 @@ public class MainActivity extends AppCompatActivity {
                                 value = -Math.round(360.0 - angle);
                             }
 
-                            Toast.makeText(MainActivity.this, value + "", Toast.LENGTH_LONG).show();
-
                             matrix.postRotate((float)value);
 
                             Bitmap scaledBitmap = Bitmap.createScaledBitmap(resultingImage, resultingImage.getWidth(), resultingImage.getHeight(), true);
 
                             Bitmap rotatedBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.getWidth(), scaledBitmap.getHeight(), matrix, true);
 
-                            //Bitmap cropedImg = Bitmap.createBitmap(rotatedBitmap, xmin, ymin, xmax - xmin, ymax - ymin);
+                            if(corners[0].y > corners[1].y)
+                                rotatedBitmap = Bitmap.createBitmap(rotatedBitmap,  Integer.valueOf(corners[3].x) - Integer.valueOf(corners[0].x), Integer.valueOf(corners[0].y) - Integer.valueOf(corners[1].y), corners[1].x - corners[0].x, corners[3].y - corners[0].y);
+                            else
+                                rotatedBitmap = Bitmap.createBitmap(rotatedBitmap,  Integer.valueOf(corners[0].x) - Integer.valueOf(corners[3].x), Integer.valueOf(corners[1].y) - Integer.valueOf(corners[0].y), corners[1].x - corners[0].x, corners[3].y - corners[0].y);
 
                             imageView.setImageBitmap(rotatedBitmap);
-
-                            /*
-                            int xmin, ymin, xmax, ymax;
-                            xmin = corners[0].x;
-                            ymin = corners[1].y;
-                            xmax = corners[1].x;
-                            ymax = corners[2].y;
-
-                            try {
-                                Bitmap cropedImg = Bitmap.createBitmap(bitmap, xmin, ymin, xmax - xmin, ymax - ymin);
-                                cropedImg = Bitmap.createScaledBitmap(cropedImg, 500, 500, true);
-                                getWindow().setFormat(PixelFormat.RGBA_8888);
-                                Toast.makeText(MainActivity.this, "Width" + cropedImg.getWidth() +"height" +cropedImg.getHeight(), Toast.LENGTH_SHORT).show();
-                                imageView.setImageBitmap(cropedImg);
-                            }catch (Exception ex){
-                            }
-                            */
 
                         }
                     }
@@ -157,15 +135,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
         // [END run_detector]
-    }
-
-    public static double calculateAngle(double x1, double y1, double x2, double y2)
-    {
-        double angle = Math.toDegrees(Math.atan2(x2 - x1, y2 - y1));
-        // Keep angle between 0 and 360
-        angle = angle + Math.ceil( -angle / 360 ) * 360;
-
-        return angle;
     }
 
 
